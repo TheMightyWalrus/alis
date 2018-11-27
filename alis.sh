@@ -41,8 +41,28 @@ do
 
 	#install base package
 
-	echo "Installing packages base and base-devel to ${installDir}"
-	pacstrap ${installDir} base base-devel
+	echo "mounting root $rootPart on $installDir"
+	mount $rootPart $installDir
 
+	if [ -z "@homePart" ];
+	then
+		echo "mounting home $home on $installDir/home"
+		mkdir $installDir/home
+		mount $homePart $installDir/home
+	fi
+
+
+	if [ -z "@bootPart" ];
+	then
+		echo "mounting boot $boot on $installDir/boot"
+		mkdir $installDir/boot
+		mount $bootPart $installDir/boot
+	fi
+		
+
+	echo "Installing packages base and base-devel to $installDir"
+	pacstrap ${installDir} base base-devel && genfstab $installDir >> $installDir/etc/fstab
+
+	echo "yay"
 
 done
