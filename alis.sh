@@ -40,7 +40,7 @@ do
 			;;
 		"-l" | "--locale")
 			((i++))
-			locale=${args[i]}
+			locale=(${args[i]//[,]/' '})
 			;;
 		"-H" | "--hostname")
 			((i++))
