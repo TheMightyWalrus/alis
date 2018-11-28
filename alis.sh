@@ -10,7 +10,8 @@ homePart=''
 bootPart=''
 keymap='us'
 hostname='ArchLinuxPC'
-locale='en_US.UTF-8'
+locale='en_US'
+lang='en_US.UTF-8'
 timezone='Europe/Berlin'
 
 
@@ -42,6 +43,10 @@ do
 			((i++))
 			locale=(${args[i]//[,]/' '})
 			;;
+		"-L" | "--lang")
+			((i++))
+			lang=${args[i]}
+			;;
 		"-H" | "--hostname")
 			((i++))
 			hostname=${args[i]}
@@ -56,7 +61,7 @@ do
 done
 
 
-echo "Checking if Partitions differ from default"
+echo "Checking if partition scheme differs from default"
 
 if [ -z $rootPart ]; then echo "Unspecified rootPartition. Speficy with -r or --root"; exit 1; fi
 
@@ -86,7 +91,7 @@ fi
 #(genfstab $installDir >> $installDir/etc/fstab)
 
 cp $(dirname $0)"/chroot.sh" $installDir
-arch-chroot $installDir "/usr/bin/bash" "/chroot.sh" "$keymap" "$locale" "$hostname" "$timezone"
+arch-chroot $installDir "/usr/bin/bash" "/chroot.sh" "$keymap" "$locale" "$hostname" \ 
+	"$timezone" "$lang"
 
 echo "yay"
-
