@@ -8,6 +8,8 @@ installDir='/mnt'
 rootPart=''
 homePart=''
 bootPart=''
+efiPart=''
+bootDisk=''
 keymap='us'
 hostname='ArchLinuxPC'
 locale='en_US'
@@ -23,6 +25,10 @@ do
 			((i++))
 			installDir=${args[i]}
 			;;
+		"-d" | "--disk")
+			((i++))
+			bootDisk=${args[i]}
+			;;
 		"-r" | "--root")
 			((i++))
 			rootPart=${args[i]}
@@ -34,6 +40,9 @@ do
 		"-b" | "--boot")
 			((i++))
 			bootPart=${args[i]}
+			;;
+		"-e" | "--esp" | "--efi-partition")
+			efiPart=${args[i]}
 			;;
 		"-k" | "--keymap")
 			((i++))
@@ -63,7 +72,13 @@ done
 
 echo "Checking if partition scheme differs from default"
 
-if [ -z $rootPart ]; then echo "Unspecified rootPartition. Speficy with -r or --root"; exit 1; fi
+if [ -z $rootPart ]; 
+then echo "Unspecified rootPartition. Speficy with -r or --root"; exit 1; 
+fi
+
+if [ -z $bootDisk ]; 
+then echo "Unspecified Disk for Bootloader. Specify with -d or --disk"; exit 1;
+fi
 
 #install base package
 
@@ -84,14 +99,18 @@ then
 	mkdir $installDir/boot
 	mount $bootPart $installDir/boot
 fi
+
+if [ -z $efiPart ]; echo "No esp bootpoint defined. Asuming BIOS/MBR system." 
+then efiPart="BIOS"; 
+else echo "esp $efiPart"
+fi
 	
 
-#echo "Installing packages base $installDir"
-#(pacstrap ${installDir} "base" ) && \
-#(genfstab $installDir >> $installDir/etc/fstab)
+echo "Installing packages base $installDir"
+(pacstrap ${installDir} "base" ) && \
+(genfstab $installDir >> $installDir/etc/fstab)
 
 cp $(dirname $0)"/chroot.sh" $installDir
-arch-chroot $installDir "/usr/bin/bash" "/chroot.sh" "$keymap" "$locale" "$hostname" \ 
-	"$timezone" "$lang"
+arch-chroot $installDir "/usr/bin/bash" "/chroot.sh" "$keymap" "$locale" "$hostname" "$timezone" "$lang" "$efiPart" "$bootDisk"
 
 echo "yay"

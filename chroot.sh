@@ -5,6 +5,8 @@ locale=$2
 hostname=$3
 timezone=$4
 lang=$5
+efiPart=$6
+bootDisk=$7
 
 zoneInfoPath="/usr/share/zoneinfo/$timezone"
 if [ -f $zoneInfoPath ]; 
@@ -23,7 +25,7 @@ else
 	echo "" > /etc/locale.gen
 	for entry in $locale
 	do
-		echo entry >> /etc/locale.gen	
+		echo $entry >> /etc/locale.gen	
 	done
 	locale-gen
 fi
@@ -43,5 +45,18 @@ cat /etc/hosts
 
 echo "generation initramfs"
 mkinitcpio -p linux
+
+pacman -S grub
+
+if [ $efiPart != "BIOS" ]
+then
+	(pacman -S efibootmgr) && \
+	(mount $efiPart /boot) && \
+	(grub-install --target=x86_64-efi --efi-directory=/boot --bootloader-id=GRUB)
+else
+	grub-install --target=i386-pc $bootDisk
+fi
+
+grub-mkconfig -o /boot/grub/grub.cfg
 
 exit
